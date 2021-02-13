@@ -33,3 +33,6 @@ export const defaults: BaseOptions = {
     selectAll: false,
     search: false
 }
+
+
+export type Options = Partial<BaseOptions>;
