@@ -6,13 +6,20 @@ import {
 
 import {
     Instance,
-    MedusaFn
+    MedusaFn,
+    OptElement
 } from './types/instance';
 
+
+import {
+    createElement
+} from './utils/dom'
+
 import './utils/polyfills'
+import { isInterfaceDeclaration } from 'typescript';
 
 function MedusaInstance(
-    element: HTMLElement,
+    element: HTMLSelectElement,
     instanceConfig?: Options
 ): Instance {
     const self = {
@@ -22,11 +29,98 @@ function MedusaInstance(
         }
     } as Instance;
 
-    self.element = element;
-    self.input = document.createElement('input');
-    self.parent = document.createElement('div')
-    self.container = document.createElement('ul')
-    // self.elements = [self];
+    self.selectTag = element;
+    
+    self._appendEl = appendEl;
+    self.remove = _remove;
+    self._bind = bind;
+
+
+    function init() {
+        buildElements()
+    }
+
+    function getMainSelect() {
+        return self.selectTag;
+    }
+
+    function buildElements() {
+        const selectEl = getMainSelect();
+        self.root = createElement('div', self.config.baseClass)
+        self.parent = createElement('div', self.config.baseClass + "__wrapper")
+        self.container = createElement('ul', self.config.baseClass + "__container")
+        self.input = createElement('input', self.config.baseClass + "__input");
+        self.elements = createOptReplacer(selectEl);
+        
+        self._appendEl(self.root, self.parent)
+        self._appendEl(self.parent, self.input);
+        self._appendEl(self.parent, self.container as HTMLElement);
+        
+        for (let i = 0; i < self.elements.length; i++) {
+            self._appendEl(self.container, self.elements[i].el as HTMLElement)
+        }
+        document.body.appendChild(self.root)
+    }
+
+    function appendEl<E extends HTMLElement | Document>(
+        to: E,
+        el: E | E[]
+    ): void {
+        if (el instanceof Array) return el.forEach((item) => appendEl(to, item))
+        to.appendChild(el)
+    }
+
+    function _remove(index: number, el?: boolean): boolean {
+        if (el) {}
+        return true;
+    }
+
+
+    /**
+     * 
+     * @param {Element} element - the el to add the listener to 
+     * @param {String} event  - the name of the event
+     * @param {Function} handler - event handler
+     */
+    
+    function bind<E extends Element | Window | Document>(
+        element: E | E[],
+        event: string | string[],
+        handler: (e?: any) => void,
+        options?: object
+    ): void {
+        if (event instanceof Array) {
+            return event.forEach((ev) => bind (element, ev, handler, options))
+        }
+        if (element instanceof Array) {
+            return element.forEach((el) => bind(el, event, handler, options))
+        }
+
+        element.addEventListener(event, handler, options);
+        self._handlers.push({
+            remove: () => element.removeEventListener(event, handler);
+        })
+    }
+
+    
+
+
+    function createOptReplacer(selectEl: HTMLSelectElement): OptElement[] {
+        const opts = selectEl.options;
+        const optElements: OptElement[] = []
+        for (let i = 0; i < opts.length; i++) {
+            optElements.push({
+                el: createElement('li',
+                        self.config.baseClass + "__item",
+                        opts[i].textContent),
+                val: opts[i].value,
+                text: opts[i].textContent
+            })
+        }
+        return optElements
+    }
+
+    init()
     return self;
 }
 

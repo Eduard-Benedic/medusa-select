@@ -5,13 +5,35 @@ import { BaseOptions, Options } from "./options";
 
 
 export type Instance = {
-    element: HTMLElement,
-    input: HTMLInputElement,    
+    
+    root: HTMLDivElement;
     parent: HTMLDivElement;
     container: HTMLUListElement;
+    selectTag: HTMLSelectElement,
+    input: HTMLInputElement, 
     config: BaseOptions;
-    // elements: OptElement[] | OptElement;
-    
+    elements: OptElement[] | OptElement;
+    remove: (index: number, el?: boolean) => boolean;
+
+    // Internals
+    _handlers: {
+        remove: () => void;
+    }[];
+
+    _appendEl: <E extends HTMLElement | Document>(
+        to: E,
+        el: E | E[]
+    ) => void;
+    _bind: <E extends Element>(
+        element: E | E[],
+        event: string | string[],
+        handler: (e?: any) => void
+    ) => void;
+    _createElement: <E extends HTMLElement>(
+        tag: keyof HTMLElementTagNameMap,
+        className: string,
+        content?: string,
+    ) => E;
 }
 
 export type OptElement = {

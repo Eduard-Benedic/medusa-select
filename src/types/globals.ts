@@ -5,7 +5,6 @@ import { Instance, MedusaFn } from './instance';
 declare global {
     interface HTMLElement {
         medusa: (config?: Options) => Instance;
-        _medusa?: Instance;
         
     }
 

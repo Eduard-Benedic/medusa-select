@@ -22,7 +22,8 @@ export interface BaseOptions {
     /* Enable search */
     search: boolean;
 
-    /*  */
+    /* Base class, this allows customizable css to be added */
+    baseClass: string;
 
 }
 
@@ -33,7 +34,8 @@ export const defaults: BaseOptions = {
     captionFormat: "habar n-am",
     allSelected: "Are all selected",
     selectAll: false,
-    search: false
+    search: false,
+    baseClass: 'medusa'
 }
 
 
