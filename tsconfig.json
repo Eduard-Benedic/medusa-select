@@ -3,11 +3,16 @@
         "module": "commonjs",
         "noImplicitAny": true,
         "removeComments": false,
+        "moduleResolution": "node",
         "preserveConstEnums": true,
         "sourceMap": true,
-        "outDir": "dist",
-        "target": "ES5"
+        "outDir": "./dist",
+        "target": "es2015",
+        "lib": ["es2015", "dom", "es2017.object", "esnext.asynciterable"],
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true
     },
-    "include": ["src/*"],
-    "exclude": ["node_modules", "**/*.spec.ts"]
+    // "include": ["src/*"],
+    // "exclude": ["node_modules", "**/*.spec.ts"]
 }

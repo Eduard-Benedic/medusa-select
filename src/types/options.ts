@@ -22,6 +22,8 @@ export interface BaseOptions {
     /* Enable search */
     search: boolean;
 
+    /*  */
+
 }
 
 
