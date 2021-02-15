@@ -12,11 +12,12 @@ import {
 
 
 import {
-    createElement
+    createElement,
+    clearNode
 } from './utils/dom'
 
 import './utils/polyfills'
-import { ElementFlags, isInterfaceDeclaration } from 'typescript';
+import { createLiteralTypeNode, ElementFlags, isInterfaceDeclaration, nodeModuleNameResolver, parseConfigFileTextToJson } from 'typescript';
 
 function MedusaInstance(
     element: HTMLSelectElement,
@@ -24,23 +25,48 @@ function MedusaInstance(
 ): Instance {
     const self = {
         config: {
-            ...instanceConfig,
             ...defaultOptions,
+            ...instanceConfig,
         }
     } as Instance;
 
     self.selectTag = element;
     
     self._appendEl = appendEl;
-    self.remove = _remove;
     self._bind = bind;
     self._handleOptionClick = handleOptionClick;
-
+    self._handleSearch = handleSearch
 
     function init() {
+
+        parseConfig();
         buildElements()
         bindEvents()
     }
+
+    function parseConfig() {
+        Object.defineProperty(self, "_filteredOptions", {
+            get: () => self._filteredOptions,
+            set: (elements) => {
+                 filteredOptionsSetter(elements)
+            } 
+        })
+    }
+
+    // function update(elements: OptElement[]): void {
+        
+    // }
+
+
+    function filteredOptionsSetter(elements: OptElement[]) : void {
+        clearNode(self.container);
+
+        elements.forEach(element => {
+            let elementTag  : HTMLLIElement  = element.el;
+            self._appendEl(self.container, elementTag as HTMLElement)
+        })
+    }
+
 
     function getMainSelect() {
         return self.selectTag;
@@ -54,7 +80,7 @@ function MedusaInstance(
         self.parent = createElement('div', baseClass + "__wrapper")
         self.container = createElement('ul', baseClass + "__container")
         self.input = createElement('input', baseClass + "__input");
-        self.caption = createElement('p', baseClass + "__caption", self.config.placeholder)
+        self.caption = createElement('p', baseClass + "__caption", self.config.captionFormat)
         self.elements = createOptReplacer(selectEl);
         
         self._appendEl(self.root, [selectEl, self.parent])
@@ -68,8 +94,18 @@ function MedusaInstance(
 
 
     function bindEvents() {
-        console.log(self.elements)
-        self._bind(getOptsElements(self.elements as OptElement[]), 'click', handleOptionClick)
+        bind(getOptsElements(self.elements as OptElement[]), 'click', handleOptionClick)
+        if (self.config.search) {
+            bind(self.input as HTMLInputElement, 'keyup', handleSearch)
+        }
+    }
+
+    function handleSearch(e: any): void {
+        const userText : string = e.target.value;
+        let remainingItems : OptElement[] = (self.elements as OptElement[]).filter(el => {
+            return (String(el.text).toLowerCase() as string).includes(userText.toLowerCase())
+        })
+        self._filteredOptions = remainingItems
     }
 
     function getOptsElements(elements: OptElement[]) : HTMLLIElement[] {
@@ -83,14 +119,13 @@ function MedusaInstance(
 
     function handleOptionClick(e?: any) {
         const option = e.target;
-    
         updateVisually(option)
         updateFunctionally(option);
     }
 
     function updateVisually(el: HTMLLIElement): void {
         el.classList.toggle('selected')
-        let hasDefaultCaption = self.config.placeholder == self.caption.textContent;
+        let hasDefaultCaption = self.config.captionFormat == self.caption.textContent;
         if (hasDefaultCaption) {
             self.caption.textContent = ""
         }
@@ -103,7 +138,11 @@ function MedusaInstance(
             console.log(el.dataset.val)
             const newText = self.caption.textContent.replace(el.dataset.val + ", ", "")
             self.caption.textContent = newText
-            
+        }
+        const csvNum = self.caption.textContent.split(',')
+
+        if (csvNum.length > self.config.csv) {
+            self.caption.textContent = self.config.captionFormat
         }
     }
 
@@ -127,10 +166,7 @@ function MedusaInstance(
         to.appendChild(el)
     }
 
-    function _remove(index: number, el?: boolean): boolean {
-        if (el) {}
-        return true;
-    }
+   
 
 
     /**
@@ -158,8 +194,6 @@ function MedusaInstance(
         //     remove: () => element.removeEventListener(event, handler);
         // })
     }
-
-    
 
 
     function createOptReplacer(selectEl: HTMLSelectElement): OptElement[] {

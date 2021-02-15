@@ -14,3 +14,8 @@ export function createElement<T extends HTMLElement>(
     if (content !== undefined) e.textContent = content;
     return e
 }
+
+
+export function clearNode(node: HTMLElement) {
+    while (node.firstChild) node.removeChild(node.firstChild)
+}

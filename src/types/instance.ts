@@ -14,8 +14,8 @@ export type Instance = {
     caption: HTMLParagraphElement;
     config: BaseOptions;
     elements: OptElement[] | OptElement;
-    remove: (index: number, el?: boolean) => boolean;
 
+    _filteredOptions: OptElement[];
     // Internals
     _handlers: {
         remove: () => void;
@@ -36,13 +36,13 @@ export type Instance = {
         content?: string,
     ) => E;
     _handleOptionClick: (e?: any) => void;
+    _handleSearch: (e?:  any) => void;
 }
 
 export type OptElement = {
     el: HTMLLIElement
     val: string | number;
     text: string | number;
-
 }
 
 export interface MedusaFn {
