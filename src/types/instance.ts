@@ -35,7 +35,7 @@ export type Instance = {
         className: string,
         content?: string,
     ) => E;
-    _addOption: (e?: any) => void;
+    _handleOptionClick: (e?: any) => void;
 }
 
 export type OptElement = {

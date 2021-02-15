@@ -16,7 +16,7 @@ import {
 } from './utils/dom'
 
 import './utils/polyfills'
-import { isInterfaceDeclaration } from 'typescript';
+import { ElementFlags, isInterfaceDeclaration } from 'typescript';
 
 function MedusaInstance(
     element: HTMLSelectElement,
@@ -34,7 +34,7 @@ function MedusaInstance(
     self._appendEl = appendEl;
     self.remove = _remove;
     self._bind = bind;
-    self._addOption = addOption;
+    self._handleOptionClick = handleOptionClick;
 
 
     function init() {
@@ -69,7 +69,7 @@ function MedusaInstance(
 
     function bindEvents() {
         console.log(self.elements)
-        self._bind(getOptsElements(self.elements as OptElement[]), 'click', addOption)
+        self._bind(getOptsElements(self.elements as OptElement[]), 'click', handleOptionClick)
     }
 
     function getOptsElements(elements: OptElement[]) : HTMLLIElement[] {
@@ -81,42 +81,44 @@ function MedusaInstance(
         return extractedElements
     }
 
-    function addOption(e?: any) {
+    function handleOptionClick(e?: any) {
         const option = e.target;
     
-        const selectEl = getMainSelect();
-
-        addOptionVisually(option)
-        addOptionFunctionally(option);
-   
-        
+        updateVisually(option)
+        updateFunctionally(option);
     }
 
-    function addOptionVisually(el: HTMLLIElement): void {
+    function updateVisually(el: HTMLLIElement): void {
+        el.classList.toggle('selected')
         let hasDefaultCaption = self.config.placeholder == self.caption.textContent;
         if (hasDefaultCaption) {
             self.caption.textContent = ""
         }
-        self.caption.textContent += el.dataset.val + ","
+        const hasValue = self.caption.textContent.includes(el.dataset.val)
+        const isSelected = el.classList.contains('selected')
+        if (!hasValue) {
+            self.caption.textContent += el.dataset.val + ", "
+        }
+        if (!isSelected && hasValue) {
+            console.log(el.dataset.val)
+            const newText = self.caption.textContent.replace(el.dataset.val + ", ", "")
+            self.caption.textContent = newText
+            
+        }
     }
 
-    function addOptionFunctionally(el: HTMLLIElement): void {
-        // Each list item has a corresponding index for a option.
-        // In this way I can easily map between the option and the li
+    function updateFunctionally(el: HTMLLIElement): void {
+        // Each item in the list has a mapped data index that
+        //maps to the corresponding option.
         const index = parseInt(el.dataset.index)
         const mappedOption = self.selectTag.options[index]
-        console.log(self.selectTag.selectedOptions)
         toggleOptSelection(mappedOption);
     }
-
 
     function toggleOptSelection(opt: HTMLOptionElement): void {
         opt.selected == true ? opt.removeAttribute('selected') : opt.setAttribute('selected', 'selected' )
     }
     
-
-
-  
     function appendEl<E extends HTMLElement | Document>(
         to: E,
         el: E | E[]
