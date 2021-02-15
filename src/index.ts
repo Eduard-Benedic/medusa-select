@@ -34,10 +34,12 @@ function MedusaInstance(
     self._appendEl = appendEl;
     self.remove = _remove;
     self._bind = bind;
+    self._addOption = addOption;
 
 
     function init() {
         buildElements()
+        bindEvents()
     }
 
     function getMainSelect() {
@@ -46,22 +48,75 @@ function MedusaInstance(
 
     function buildElements() {
         const selectEl = getMainSelect();
-        self.root = createElement('div', self.config.baseClass)
-        self.parent = createElement('div', self.config.baseClass + "__wrapper")
-        self.container = createElement('ul', self.config.baseClass + "__container")
-        self.input = createElement('input', self.config.baseClass + "__input");
+        const baseClass = self.config.baseClass;
+
+        self.root = createElement('div', baseClass)
+        self.parent = createElement('div', baseClass + "__wrapper")
+        self.container = createElement('ul', baseClass + "__container")
+        self.input = createElement('input', baseClass + "__input");
+        self.caption = createElement('p', baseClass + "__caption", self.config.placeholder)
         self.elements = createOptReplacer(selectEl);
         
-        self._appendEl(self.root, self.parent)
-        self._appendEl(self.parent, self.input);
-        self._appendEl(self.parent, self.container as HTMLElement);
-        
+        self._appendEl(self.root, [selectEl, self.parent])
+        self._appendEl(self.parent, [self.input,self.caption,  self.container as HTMLElement]);
+        // self._appendEl(self.parent, );s
         for (let i = 0; i < self.elements.length; i++) {
             self._appendEl(self.container, self.elements[i].el as HTMLElement)
         }
         document.body.appendChild(self.root)
     }
 
+
+    function bindEvents() {
+        console.log(self.elements)
+        self._bind(getOptsElements(self.elements as OptElement[]), 'click', addOption)
+    }
+
+    function getOptsElements(elements: OptElement[]) : HTMLLIElement[] {
+        const extractedElements : HTMLLIElement[] = [];
+        for (let i = 0; i < elements.length; i++) {
+            console.log(elements[i].el)
+            extractedElements.push(elements[i].el)
+        }
+        return extractedElements
+    }
+
+    function addOption(e?: any) {
+        const option = e.target;
+    
+        const selectEl = getMainSelect();
+
+        addOptionVisually(option)
+        addOptionFunctionally(option);
+   
+        
+    }
+
+    function addOptionVisually(el: HTMLLIElement): void {
+        let hasDefaultCaption = self.config.placeholder == self.caption.textContent;
+        if (hasDefaultCaption) {
+            self.caption.textContent = ""
+        }
+        self.caption.textContent += el.dataset.val + ","
+    }
+
+    function addOptionFunctionally(el: HTMLLIElement): void {
+        // Each list item has a corresponding index for a option.
+        // In this way I can easily map between the option and the li
+        const index = parseInt(el.dataset.index)
+        const mappedOption = self.selectTag.options[index]
+        console.log(self.selectTag.selectedOptions)
+        toggleOptSelection(mappedOption);
+    }
+
+
+    function toggleOptSelection(opt: HTMLOptionElement): void {
+        opt.selected == true ? opt.removeAttribute('selected') : opt.setAttribute('selected', 'selected' )
+    }
+    
+
+
+  
     function appendEl<E extends HTMLElement | Document>(
         to: E,
         el: E | E[]
@@ -97,9 +152,9 @@ function MedusaInstance(
         }
 
         element.addEventListener(event, handler, options);
-        self._handlers.push({
-            remove: () => element.removeEventListener(event, handler);
-        })
+        // self._handlers.push({
+        //     remove: () => element.removeEventListener(event, handler);
+        // })
     }
 
     
@@ -107,12 +162,16 @@ function MedusaInstance(
 
     function createOptReplacer(selectEl: HTMLSelectElement): OptElement[] {
         const opts = selectEl.options;
-        const optElements: OptElement[] = []
+        const optElements: OptElement[] = [];
+
         for (let i = 0; i < opts.length; i++) {
+            const optReplacer: HTMLLIElement = createElement('li',
+                self.config.baseClass + "__item",
+                opts[i].textContent);
+            optReplacer.dataset.index = String(i);
+            optReplacer.dataset.val = opts[i].textContent;
             optElements.push({
-                el: createElement('li',
-                        self.config.baseClass + "__item",
-                        opts[i].textContent),
+                el: optReplacer,
                 val: opts[i].value,
                 text: opts[i].textContent
             })

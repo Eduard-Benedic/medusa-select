@@ -10,7 +10,8 @@ export type Instance = {
     parent: HTMLDivElement;
     container: HTMLUListElement;
     selectTag: HTMLSelectElement,
-    input: HTMLInputElement, 
+    input: HTMLInputElement,
+    caption: HTMLParagraphElement;
     config: BaseOptions;
     elements: OptElement[] | OptElement;
     remove: (index: number, el?: boolean) => boolean;
@@ -34,6 +35,7 @@ export type Instance = {
         className: string,
         content?: string,
     ) => E;
+    _addOption: (e?: any) => void;
 }
 
 export type OptElement = {
