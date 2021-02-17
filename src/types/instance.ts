@@ -38,7 +38,11 @@ export type Instance = {
         content?: string,
     ) => E;
     _handleOptionClick: (e?: any) => void;
-    _handleSearch: (e?:  any) => void;
+    _handleSearch: (e?: any) => void;
+    _toggleClass: <E extends HTMLElement> (
+        el: E,
+        className: string
+    ) => void;
 }
 
 export type OptElement = {

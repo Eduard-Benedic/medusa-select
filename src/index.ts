@@ -13,7 +13,8 @@ import {
 
 import {
     createElement,
-    clearNode
+    clearNode,
+    toggleClass
 } from './utils/dom'
 
 import './utils/polyfills'
@@ -99,7 +100,14 @@ function MedusaInstance(
         if (self.config.search) {
             bind(self.input as HTMLInputElement, 'keyup', handleSearch)
         }
+        bind(self.caption,'click', handleToggleDropDown);
     }
+
+    function handleToggleDropDown(e: any) {
+        toggleClass(self.container, 'open')
+        
+    }
+
 
     function handleSearch(e: any): void {
         const userText : string = e.target.value;

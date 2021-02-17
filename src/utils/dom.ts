@@ -19,3 +19,14 @@ export function createElement<T extends HTMLElement>(
 export function clearNode(node: HTMLElement) {
     while (node.firstChild) node.removeChild(node.firstChild)
 }
+
+export function toggleClass<E extends HTMLElement>(
+    el: E | E[],
+    className: string
+): void {
+    if (el instanceof Array) {
+        for (let i = 0; i < el.length; i++) toggleClass(el[i], className)
+    } else {
+        el.classList.toggle(className)
+    }
+}
