@@ -31,6 +31,7 @@ function MedusaInstance(
     } as Instance;
 
     self.selectTag = element;
+    self._realSelectedValues = []
     
     self._appendEl = appendEl;
     self._bind = bind;
@@ -119,30 +120,26 @@ function MedusaInstance(
 
     function handleOptionClick(e?: any) {
         const option = e.target;
-        updateVisually(option)
         updateFunctionally(option);
+        updateVisually(option)
     }
 
     function updateVisually(el: HTMLLIElement): void {
-        el.classList.toggle('selected')
-        let hasDefaultCaption = self.config.captionFormat == self.caption.textContent;
-        if (hasDefaultCaption) {
-            self.caption.textContent = ""
-        }
-        const hasValue = self.caption.textContent.includes(el.dataset.val)
-        const isSelected = el.classList.contains('selected')
-        if (!hasValue) {
-            self.caption.textContent += el.dataset.val + ", "
-        }
-        if (!isSelected && hasValue) {
-            console.log(el.dataset.val)
-            const newText = self.caption.textContent.replace(el.dataset.val + ", ", "")
-            self.caption.textContent = newText
-        }
-        const csvNum = self.caption.textContent.split(',')
+        const isDefaultCaption = self.caption.textContent === self.config.captionFormat
+        const selectedOptions: ArrayLike<HTMLOptionElement> = getMainSelect().selectedOptions;
+        const optCount: number = selectedOptions.length;
 
-        if (csvNum.length > self.config.csv) {
-            self.caption.textContent = self.config.captionFormat
+        if (isDefaultCaption) {
+            self.caption.textContent = el.dataset.val + ", "
+        } else {
+            if (optCount > self.config.csv) {
+                self.caption.textContent = (optCount + " Selected").toString()
+            } else if (self._realSelectedValues.length < 1) {
+                self.caption.textContent= self.config.captionFormat
+            }
+            else {
+                self.caption.textContent = self._realSelectedValues.join()
+            }
         }
     }
 
@@ -151,7 +148,16 @@ function MedusaInstance(
         //maps to the corresponding option.
         const index = parseInt(el.dataset.index)
         const mappedOption = self.selectTag.options[index]
+        if (!self._realSelectedValues.includes(el.dataset.val)) {
+            self._realSelectedValues.push(el.dataset.val as string);
+        } else {
+            const newArr = self._realSelectedValues.filter(val => {
+                return val != el.dataset.val
+            })
+            self._realSelectedValues = newArr
+        }
         toggleOptSelection(mappedOption);
+        el.classList.toggle('selected')
     }
 
     function toggleOptSelection(opt: HTMLOptionElement): void {

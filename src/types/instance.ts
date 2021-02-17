@@ -15,6 +15,8 @@ export type Instance = {
     config: BaseOptions;
     elements: OptElement[] | OptElement;
 
+
+    _realSelectedValues: string[];
     _filteredOptions: OptElement[];
     // Internals
     _handlers: {

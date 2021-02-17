@@ -31,7 +31,7 @@ export interface BaseOptions {
 export const defaults: BaseOptions = {
     placeholder: "Search something",
     csv: 3,
-    captionFormat: "habar n-am",
+    captionFormat: "Select an option...",
     allSelected: "Are all selected",
     selectAll: false,
     search: false,
