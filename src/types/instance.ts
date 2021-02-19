@@ -22,7 +22,6 @@ export type Instance = {
     _handlers: {
         remove: () => void;
     }[];
-
     _appendEl: <E extends HTMLElement | Document>(
         to: E,
         el: E | E[]
